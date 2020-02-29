@@ -8,6 +8,10 @@ const ToDoList = (props) => {
     props.onRemove(id);
   }
 
+  const update = (item) => {
+    props.onUpdate(item);
+  }
+
   if (items.length === 0) {
     return (
       <div> No Items </div>
@@ -21,7 +25,8 @@ const ToDoList = (props) => {
             <ToDoItem
               key={item.id}
               item={item}
-              onRemove={remove} />
+              onRemove={remove}
+              onUpdate={update} />
           );
         })
       }
@@ -32,7 +37,8 @@ const ToDoList = (props) => {
 
 ToDoList.defaultProps = {
   items: {},
-  onRemove: () => { }
+  onRemove: () => {},
+  onUpdate: () => {}
 }
 
 export default ToDoList;

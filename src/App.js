@@ -29,17 +29,44 @@ const App = () => {
 
   const remove = (id) => {
     const itemIndex = todoList.findIndex(item => item.id === id);
-    const t = todoList;
-    t.splice(itemIndex, 1);
+    todoList.splice(itemIndex, 1);
     ToDoService.remove(id);
-    setTodoList(t);
+    setTodoList(todoList);
+  }
+
+  const update = (newItem) => {
+    const itemIndex = todoList.findIndex(item => item.id === newItem.id);
+    todoList[itemIndex] = newItem;
+    ToDoService.update(newItem);
+    setTodoList(todoList);
+  }
+
+  const clear = () => {
+    const todo = []
+    const done = []
+
+    todoList.forEach(item => {
+      if (item.isChecked) {
+        done.push(item);
+      } else {
+        todo.push(item);
+      }
+    })
+
+    done.forEach(item => {
+      remove(item.id)
+    })
+
+    setTodoList(todo);
   }
  
   return (
     <div className="App">
       <NewToDoItem onAdd={add} />
       <hr />
-      <ToDoList items={todoList} onRemove={remove} />
+        <button className="tw-btn" onClick={clear}> Limpar </button>
+      <hr />
+      <ToDoList items={todoList} onRemove={remove} onUpdate={update} />
     </div>
   );
 }
