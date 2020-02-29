@@ -1,72 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+
 import ToDoList from './views/components/ToDoList';
 import NewToDoItem from './views/components/NewToDoItem';
-import { ToDoService } from './data/services/ToDoService';
+
+import ToDoActions from './data/actions/ToDoActions';
+import ToDoStore from './data/stores/ToDoStore';
+
+const getToDoState = async () => {
+  return await ToDoStore.getAll() //UNICO METODO PUBLICO DA STORE POIS NÃO FAZ ALTERAÇÃO NELA
+}
 
 const App = () => {
 
   const [todoList, setTodoList] = useState([]);
 
-  const getTodoList = async () => {
-    setTodoList(await ToDoService.list());
-  };
-
   useEffect(() => {
-    getTodoList();
-  })
+    console.log('atualizou')
+    const _onChange = async () => {
+      setTodoList(await getToDoState()); //SEMPRE QUE TIVER ALTERAÇÃO NA STORE EU VOU SETAR O NOVO NO STATE
+    }
 
-  const add = (description) => {
-    ToDoService.create({
-      description,
-      isChecked: false
-    })
-      .then(newItem => {
-        todoList.push(newItem);
-        setTodoList(todoList);
-      })
-  }
+  _onChange();
 
-  const remove = (id) => {
-    const itemIndex = todoList.findIndex(item => item.id === id);
-    todoList.splice(itemIndex, 1);
-    ToDoService.remove(id);
-    setTodoList(todoList);
-  }
+    ToDoStore.addChangeListener(_onChange); //SE INSCREVENDO NA STORE PARA OUVIR ALTERAÇÕES
+    return () => {
+      ToDoStore.removeChangeListener(_onChange); //DESESCREVENDO NA STORE QUANDO O COMPONENTE É "DESMONTADO DA TELA"
+    }
+  }, [todoList])
 
-  const update = (newItem) => {
-    const itemIndex = todoList.findIndex(item => item.id === newItem.id);
-    todoList[itemIndex] = newItem;
-    ToDoService.update(newItem);
-    setTodoList(todoList);
-  }
-
-  const clear = () => {
-    const todo = []
-    const done = []
-
-    todoList.forEach(item => {
-      if (item.isChecked) {
-        done.push(item);
-      } else {
-        todo.push(item);
-      }
-    })
-
-    done.forEach(item => {
-      remove(item.id)
-    })
-
-    setTodoList(todo);
-  }
- 
   return (
     <div className="App">
-      <NewToDoItem onAdd={add} />
+      <NewToDoItem onAdd={ToDoActions.create} />
       <hr />
-        <button className="tw-btn" onClick={clear}> Limpar </button>
+      <button className="tw-btn" onClick={ToDoActions.clear}> Limpar </button>
       <hr />
-      <ToDoList items={todoList} onRemove={remove} onUpdate={update} />
+      <ToDoList items={todoList} onRemove={ToDoActions.remove} onUpdate={ToDoActions.update} />
     </div>
   );
 }
